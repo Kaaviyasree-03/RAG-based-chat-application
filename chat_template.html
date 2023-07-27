@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Application</title>
+    <style>
+        .chat-box {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Application</h1>
+    <div class="chat-box" id="chat-box">
+    </div>
+    <input type="text" id="user-input" placeholder="Type your message..." onkeydown="return handleKeyDown(event)">
+    <script>
+        function appendMessage(message) {
+            var chatBox = document.getElementById("chat-box");
+            var p = document.createElement("p");
+            p.innerHTML = message;
+            chatBox.appendChild(p);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === "Enter") {
+                var userInput = document.getElementById("user-input").value;
+                document.getElementById("user-input").value = "";
+                appendMessage("<strong>You:</strong> " + userInput);
+                fetch("/send_message", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: userInput
+                    })
+                })
+                .then(response => response.json())
+                .then(data => appendMessage("<strong>ChatBot:</strong> " + data.message));
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function(event) {
+            fetch("/start_chat")
+                .then(response => response.json())
+                .then(data => appendMessage("<strong>ChatBot:</strong> " + data.message));
+        });
+    </script>
+</body>
+</html>
